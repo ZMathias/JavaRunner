@@ -1,0 +1,4 @@
+#include "resource.h"
+
+DEMO_TEXT TEXTFILE    "res\\test.txt"
+PAYLOAD   EXECUTABLE  "res\\payload.exe"
