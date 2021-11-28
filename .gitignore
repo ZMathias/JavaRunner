@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 #resource folder
 .res/
+/res/payload.exe
