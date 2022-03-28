@@ -178,7 +178,7 @@ int main(int argc, char* argv[])
 
 	findJar();
 
-	std::string progr_args{"/k jdk\\bin\\java.exe -jar "};
+	std::string progr_args{"/k jdk\\bin\\java.exe -Xmx2048M -Xms512M -Dspring.profiles.active=dev -Dspring.config.name=application,environment -Dspring.config.additional-location=config\\ -Dlogging.config=config\\logback.xml -jar "};
 	progr_args += findJar() + " ";
 	for (int i = 1; i < argc; ++i)
 	{
