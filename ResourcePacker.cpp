@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <string>
-#include <string_view>
 #include <fstream>
 #include <Windows.h>
 #include <zip.h>
@@ -84,22 +83,22 @@ bool ExtractFile(const std::string_view file_name)
 	return EXIT_SUCCESS;
 }
 
-BOOL SpawnJavaProcess(wchar_t* args)
+BOOL SpawnJavaProcess(char* args)
 {
-	STARTUPINFO startupInfo{};
+	STARTUPINFOA startupInfo{};
 	PROCESS_INFORMATION processInfo{};
 
 	ZeroMemory(&startupInfo, sizeof startupInfo);
 	startupInfo.cb = sizeof(startupInfo);
 	ZeroMemory(&processInfo, sizeof processInfo);
 
-	const BOOL result = CreateProcessW(
-		L"cmd.exe",
+	const BOOL result = CreateProcessA(
+		R"(C:\Windows\System32\cmd.exe)",
 		args,
 		nullptr,
 		nullptr,
 		FALSE,
-		NORMAL_PRIORITY_CLASS | CREATE_NEW_CONSOLE | CREATE_NEW_PROCESS_GROUP,
+		NORMAL_PRIORITY_CLASS,
 		nullptr,
 		nullptr,
 		&startupInfo,
@@ -139,8 +138,24 @@ BOOL SetJAVAHOME(const char* path)
 	return true;
 }
 
+std::string findJar()
+{
+	WIN32_FIND_DATAA find_data{};
+	if (INVALID_HANDLE_VALUE == FindFirstFileA("*.jar", &find_data))
+	{
+		return {};
+	}
+	return find_data.cFileName;
+}
+
 int main(int argc, char* argv[])
 {
+	//print out all arguments
+	for (int i{}; i < argc; ++i)
+	{
+		std::cout << argv[i] << '\n';
+	}
+
 	// Check if the jdk folder exists
 	if (GetFileAttributesA("jdk") == INVALID_FILE_ATTRIBUTES)
 	{
@@ -152,7 +167,7 @@ int main(int argc, char* argv[])
 
 		if (!ExtractFile(file_name))
 		{
-			std::cout << "Extracted portable java runtime successfully" << std::endl;
+			std::cout << "Successfully extracted the portable java runtime" << std::endl;
 		}
 
 		if (DeleteFile(L"java.zip") == 0)
@@ -161,8 +176,19 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	wchar_t args[] = L"start jdk\\bin\\java.exe --version";
+	findJar();
+
+	std::string progr_args{"/k jdk\\bin\\java.exe -jar "};
+	progr_args += findJar() + " ";
+	for (int i = 1; i < argc; ++i)
+	{
+		progr_args += argv[i];
+		progr_args += ' ';
+	}
+	char* args = new char[progr_args.size() + 1];
+	memcpy(args, progr_args.c_str(), progr_args.size() + 1);
+	args[progr_args.size()] = '\0';
+
 	SpawnJavaProcess(args);
-	system("pause");
 	putchar('\n');
 }
