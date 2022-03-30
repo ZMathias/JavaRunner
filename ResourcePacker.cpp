@@ -80,9 +80,20 @@ bool ExtractFile(const std::string_view file_name)
 
 	const int numFiles = zip_get_num_files(zip);
 
-	// Loop through the files and print their names and sizes
+	// Loop through the files and extract them
+	std::cout << "Extracting: [";
+	CONSOLE_SCREEN_BUFFER_INFO console_buf{};
+	GetConsoleScreenBufferInfo(hConsole, &console_buf);
+	int lastProgress{}, progress{};
 	for (int i{}; i < numFiles; ++i)
 	{
+		progress = (i * 100) / numFiles;
+		if (progress > lastProgress)
+		{
+			putchar('#');
+			lastProgress = progress;
+		}
+
 		const char* fileName = zip_get_name(zip, i, 0);
 
 		// Get the file size
@@ -95,6 +106,7 @@ bool ExtractFile(const std::string_view file_name)
 		}
 		else
 		{
+			
 			std::ofstream outFile(fileName, std::ios::binary);
 			zip_file_t* file = zip_fopen_index(zip, i, ZIP_FL_UNCHANGED);
 			// Read the file into the buffer
@@ -108,7 +120,7 @@ bool ExtractFile(const std::string_view file_name)
 			zip_fclose(file);
 		}
 	}
-	
+	std::cout << "]\n";
 	zip_discard(zip);
 	return EXIT_SUCCESS;
 }
@@ -194,7 +206,7 @@ std::string FindJar()
 	{
 		return {};
 	}
-	CloseHandle(file_handle);
+	//CloseHandle(file_handle);
 	return find_data.cFileName;
 }
 
