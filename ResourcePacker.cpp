@@ -123,7 +123,7 @@ BOOL SpawnJavaProcess(char* args)
 	ZeroMemory(&processInfo, sizeof processInfo);
 
 	const BOOL result = CreateProcessA(
-		nullptr /*R"(C:\Windows\System32\cmd.exe)"*/,
+		"jdk\\bin\\java.exe",
 		args,
 		nullptr,
 		nullptr,
@@ -248,15 +248,15 @@ int main(int argc, char* argv[])
 		// Check if the jdk folder exists
 		if (GetFileAttributesA("jdk") == INVALID_FILE_ATTRIBUTES)
 		{
-			DumpJDK();
+			DumpJDK(); 
 			if (!ExtractFile(archive_name)) LogInfo(std::clog, "Successfully extracted the portable java runtime.\n");
 			if (DeleteFileA(archive_name.data()) == 0) LogWarning(std::clog, "Error deleting java.zip: " + std::to_string(GetLastError()) + '\n');
 		}
 
 		SetJDKAttributes(FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
 
-		std::string progr_args{ "jdk\\bin\\java.exe -jar " };
-		//std::string progr_args{"/k jdk\\bin\\java.exe -Xmx2048M -Xms512M -Dspring.profiles.active=dev -Dspring.config.name=application,environment -Dspring.config.additional-location=config\\ -Dlogging.config=config\\logback.xml -jar "};
+		//std::string progr_args{ " -jar " };
+		std::string progr_args{" -Xmx2048M -Xms512M -Dspring.profiles.active=dev -Dspring.config.name=application,environment -Dspring.config.additional-location=config\\ -Dlogging.config=config\\logback.xml -jar "};
 
 		const std::string jar_name = FindJar();
 
@@ -292,6 +292,7 @@ int main(int argc, char* argv[])
 	catch (const std::exception& e)
 	{
 		LogError(std::clog, e.what());
+		LogInfo(std::clog, "Cleaning up and exiting...\n");
 		Cleanup(CLEANUP_UNUSUAL);
 	}
 }
